@@ -50,7 +50,7 @@ action:
       - conditions:
           - condition: state
             entity_id: trigger.entity_id
-            state: on
+            state: 'on'
         sequence:
           - service: light.turn_{{trigger.to_state.state}}
             data_template:
@@ -61,7 +61,7 @@ action:
       - conditions:
           - condition: state
             entity_id: trigger.entity_id
-            state: off
+            state: 'off'
         sequence:
           - service: light.turn_{{ trigger.to_state.state }}
             target:
