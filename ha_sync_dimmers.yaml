@@ -1,7 +1,7 @@
 blueprint:
   name: Link On/Off/Brightness State of Multiple Light Entities
   description: |
-    ## Link On/Off/Briteness State of Multiple Light Entities v1.0.0
+    ## Link On/Off/Briteness State of Multiple Light Entities v1.0.2
 
     Select multiple entities to link their on/off/brightness state.  If any selected entity is turned on or off or changed brightness, the other selected entities will be sent a matching on/off command and brightness.
 
@@ -46,7 +46,23 @@ condition:
   value_template: '{{ trigger.to_state.state != "unavailable" }}'
 
 action:
-- service: light.turn_{{ trigger.to_state.state }}
-  target:
-    entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
-    brightness: {{trigger.to_state.attributes.brightness }}
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: trigger.entity_id
+            state: on
+        sequence:
+          - service: light.turn_{{ trigger.to_state.state }}
+            data:
+              brightness: {{ trigger.to_state.attributes.brightness }}
+            target:
+                entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
+      - conditions:
+          - condition: state
+            entity_id: trigger.entity_id
+            state: off
+        sequence:
+          - service: light.turn_{{ trigger.to_state.state }}
+            target:
+              entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
+    default: []
