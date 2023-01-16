@@ -49,4 +49,4 @@ action:
 - service: light.turn_{{ trigger.to_state.state }}
   target:
     entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
-    brightness: {{'trigger.to_state.attributes.brightness'| int}}
+    brightness: '{{trigger.to_state.attributes.brightness| int }}'
