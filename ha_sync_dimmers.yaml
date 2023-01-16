@@ -1,0 +1,52 @@
+blueprint:
+  name: Link On/Off/Brightness State of Multiple Light Entities
+  description: |
+    ## Link On/Off/Briteness State of Multiple Light Entities v1.0.0
+
+    Select multiple entities to link their on/off/brightness state.  If any selected entity is turned on or off or changed brightness, the other selected entities will be sent a matching on/off command and brightness.
+
+    You can select any light entity, but only entities supported by the `light.turn_on` or `light.turn_off` service calls will work.
+
+    ### Requirements
+    * All selected entities MUST suport `light.turn_on` and `light.turn_off` or errors will be logged and the blueprint will not work.
+    * Requires Home Assistant 2022.5.0 or newer.
+    
+    
+  domain: automation
+  homeassistant:
+    min_version: 2022.5.0
+  input:
+    linked_entities:
+      name: Entities to link
+      selector:
+        entity:
+          multiple: true
+
+mode: queued
+max_exceeded: silent
+
+variables:
+  linked_entities: !input 'linked_entities'
+
+trigger:
+- platform: state
+  entity_id: !input 'linked_entities'
+  to:
+    - "off"
+    - "on"
+
+condition:
+- condition: template
+  value_template: '{{ (trigger.to_state.state == "on") or (trigger.to_state.state == "off") }}'
+- condition: template
+  value_template: '{{trigger.to_state.context.parent_id is none or (trigger.to_state.context.id != this.context.id and trigger.to_state.context.parent_id != this.context.id) }}'
+- condition: template
+  value_template: '{{ trigger.to_state.state != "unknown" }}'
+- condition: template
+  value_template: '{{ trigger.to_state.state != "unavailable" }}'
+
+action:
+- service: light.turn_{{ trigger.to_state.state }}
+  target:
+    entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
+    brightness: {{'trigger.to_state.attributes.brightness'| int}}
