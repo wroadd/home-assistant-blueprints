@@ -52,9 +52,10 @@ action:
             entity_id: trigger.entity_id
             state: on
         sequence:
-          - service: light.turn_{{ trigger.to_state.state }}
-            data:
-              brightness: {{ trigger.to_state.state.attributes.brightness }}
+          - service: light.turn_{{trigger.to_state.state}}
+            data_template:
+              brightness: >
+                {{ trigger.to_state.state.attributes.brightness|int }}'
             target:
                 entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
       - conditions:
