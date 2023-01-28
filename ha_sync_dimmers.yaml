@@ -1,7 +1,7 @@
 blueprint:
   name: Link On/Off/Brightness State of Multiple Light Entities
   description: |
-    ## Link On/Off/Briteness State of Multiple Light Entities v1.0.2
+    ## Link On/Off/Briteness State of Multiple Light Entities v1.0.5
 
     Select multiple entities to link their on/off/brightness state.  If any selected entity is turned on or off or changed brightness, the other selected entities will be sent a matching on/off command and brightness.
 
@@ -49,22 +49,23 @@ condition:
   value_template: '{{ trigger.to_state.state != "unavailable" }}'
 
 action:
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ is_state('trigger.entity_id','on') }}"
-        sequence:
-          - service: light.turn_{{trigger.to_state.state}}
-            data_template:
-              brightness: >
-                {{ trigger.to_state.state.attributes.brightness|int }}'
-            target:
-                entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
-      - conditions:
-          - condition: template
-            value_template: "{{ is_state('trigger.entity_id', 'off') }}"
-        sequence:
-          - service: light.turn_{{ trigger.to_state.state }}
-            target:
-              entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
-    default: []
+- choose:
+  - conditions:
+    - condition: template
+      value_template: '{{ is_state(trigger.entity_id,"on") }}'
+    sequence:
+    - service: light.turn_{{trigger.to_state.state}}
+      data_template:
+        brightness: '{{ trigger.to_state.attributes.brightness|int }}'
+      target:
+        entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id)
+          | map(attribute="entity_id") | list }}'
+  - conditions:
+    - condition: template
+      value_template: '{{ is_state(trigger.entity_id, "off") }}'
+    sequence:
+    - service: light.turn_{{ trigger.to_state.state }}
+      target:
+        entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id)
+          | map(attribute="entity_id") | list }}'
+  default: []
