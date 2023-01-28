@@ -34,6 +34,9 @@ trigger:
   to:
     - "off"
     - "on"
+- platform: state
+  entity_id: !input 'linked_entities'
+  attribute: brightness
 
 condition:
 - condition: template
@@ -48,9 +51,8 @@ condition:
 action:
   - choose:
       - conditions:
-          - condition: state
-            entity_id: {{ trigger.entity_id }}
-            state: 'on'
+          - condition: template
+            value_template: "{{ state_attr('trigger.entity_id', 'state') = 'on' }}"
         sequence:
           - service: light.turn_{{trigger.to_state.state}}
             data_template:
@@ -59,9 +61,8 @@ action:
             target:
                 entity_id: '{{ expand(linked_entities) | selectattr("entity_id", "!=", trigger.entity_id) | map(attribute="entity_id") | list }}'
       - conditions:
-          - condition: state
-            entity_id: {{ trigger.entity_id }}
-            state: 'off'
+          - condition: template
+            value_template: "{{ state_attr('trigger.entity_id', 'state') = 'off' }}"
         sequence:
           - service: light.turn_{{ trigger.to_state.state }}
             target:
