@@ -1,4 +1,4 @@
-   # Link On/Off/Briteness State of Multiple Light Entities v1.0.0
+   # Link On/Off/Briteness State of Multiple Light Entities v1.0.5
    Select multiple entities to link their on/off/brightness state.  If any selected entity is turned on or off or changed brightness, the other selected entities will be sent a matching on/off command and brightness.
     You can select any light entity, but only entities supported by the `light.turn_on` or `light.turn_off` service calls will work.
     
